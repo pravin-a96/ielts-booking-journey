@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSK Sprint 6 - Retrospective & Burndown Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px; margin-bottom: 30px; text-align: center; }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .header p { font-size: 1.2em; opacity: 0.9; }
+        
+        .tabs { display: flex; background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .tab { flex: 1; padding: 15px 20px; text-align: center; cursor: pointer; border-radius: 10px 10px 0 0; transition: all 0.3s; }
+        .tab.active { background: #667eea; color: white; }
+        .tab:hover { background: #f0f0f0; }
+        .tab.active:hover { background: #667eea; }
+        
+        .tab-content { display: none; background: white; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .tab-content.active { display: block; }
+        
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .metric-card { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; }
+        .metric-card h3 { font-size: 2em; margin-bottom: 5px; }
+        .metric-card p { opacity: 0.9; }
+        
+        .section { background: white; padding: 25px; margin-bottom: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .section h2 { color: #333; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 3px solid #667eea; }
+        .section h3 { color: #555; margin: 20px 0 10px 0; }
+        
+        .retro-item { background: #f8f9fa; padding: 15px; margin: 10px 0; border-left: 4px solid #667eea; border-radius: 5px; }
+        .appreciation-item { background: #e8f5e8; border-left-color: #28a745; }
+        .improvement-item { background: #fff3cd; border-left-color: #ffc107; }
+        .issue-item { background: #f8d7da; border-left-color: #dc3545; }
+        .action-item { background: #d1ecf1; border-left-color: #17a2b8; }
+        
+        .chart-container { width: 100%; height: 400px; margin: 20px 0; }
+        .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
+        .team-member { background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; }
+        
+        .burndown-analysis { background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0; }
+        .coach-insight { background: #e3f2fd; padding: 15px; border-left: 4px solid #2196f3; margin: 15px 0; border-radius: 5px; }
+        .coach-insight ul { margin: 10px 0; padding-left: 20px; }
+        .coach-insight li { margin: 5px 0; }
+        
+        ul { margin: 10px 0; padding-left: 20px; }
+        li { margin: 5px 0; }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .header { padding: 20px; }
+            .header h1 { font-size: 1.8em; }
+            .header p { font-size: 1em; }
+            
+            .tab { padding: 12px 10px; font-size: 0.9em; }
+            .tab-content { padding: 15px; }
+            .section { padding: 15px; }
+            
+            .metrics-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+            .metric-card { padding: 15px; }
+            .metric-card h3 { font-size: 1.5em; }
+            
+            .chart-container { height: 300px; }
+            .team-grid { grid-template-columns: 1fr; gap: 10px; }
+            
+            .retro-item { padding: 12px; margin: 8px 0; }
+            .coach-insight { padding: 12px; }
+            .burndown-analysis { padding: 15px; }
+            
+            .section h2 { font-size: 1.3em; }
+            .section h3 { font-size: 1.1em; margin: 15px 0 8px 0; }
+        }
+
+        @media (max-width: 480px) {
+            .container { padding: 5px; }
+            .header { padding: 15px; }
+            .header h1 { font-size: 1.5em; }
+            .header p { font-size: 0.9em; }
+            
+            .tab { padding: 10px 8px; font-size: 0.8em; }
+            .tab-content { padding: 10px; }
+            .section { padding: 10px; }
+            
+            .metrics-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .metric-card { padding: 10px; }
+            .metric-card h3 { font-size: 1.2em; }
+            .metric-card p { font-size: 0.8em; }
+            
+            .chart-container { height: 250px; }
+            .retro-item { padding: 10px; font-size: 0.9em; }
+            .coach-insight { padding: 10px; font-size: 0.9em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>CSK Sprint 6 Retrospective & Analysis</h1>
+            <p>Sprint ID: 8790 | Team: CSK | Generated: September 10, 2025</p>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('retro')">Sprint Retrospective</div>
+            <div class="tab" onclick="showTab('burndown')">Burndown Analysis</div>
+        </div>
+
+        <!-- Sprint Retrospective Tab -->
+        <div id="retro" class="tab-content active">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <h3>82</h3>
+                    <p>Total Issues</p>
+                </div>
+                <div class="metric-card">
+                    <h3>64</h3>
+                    <p>Completed Issues (78%)</p>
+                </div>
+                <div class="metric-card">
+                    <h3>78/109</h3>
+                    <p>Story Points (71.6%)</p>
+                </div>
+                <div class="metric-card">
+                    <h3>7</h3>
+                    <p>Team Members</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🎯 Sprint Velocity & Lead Time Metrics</h2>
+                <div class="chart-container">
+                    <canvas id="velocityChart"></canvas>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+                    <div>
+                        <h3>Velocity by Issue Type:</h3>
+                        <ul>
+                            <li><strong>Test Cases:</strong> 26/26 story points (100% - Excellent!)</li>
+                            <li><strong>Sub-tasks:</strong> 16/23 story points (69.6%)</li>
+                            <li><strong>Bugs:</strong> 20/32 story points (62.5%)</li>
+                            <li><strong>Tasks:</strong> 8/10 story points (80%)</li>
+                            <li><strong>Stories:</strong> 0/9 story points (0% - Critical Issue)</li>
+                            <li><strong>Feedbacks:</strong> 8/9 story points (88.9%)</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Key Metrics:</h3>
+                        <ul>
+                            <li><strong>Sprint Achievement:</strong> 71.6% velocity completion</li>
+                            <li><strong>Issue Completion:</strong> 78% (64/82 issues)</li>
+                            <li><strong>Critical Gap:</strong> Zero story completion indicates feature development challenges</li>
+                            <li><strong>Testing Excellence:</strong> Perfect test case execution</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>✅ What Went Well</h2>
+                <div class="retro-item">
+                    <strong>Perfect Test Case Execution:</strong> Achieved 100% completion rate (26/26 story points) for test cases, demonstrating excellent QA processes and thorough testing coverage.
+                </div>
+                <div class="retro-item">
+                    <strong>Strong Bug Resolution:</strong> Successfully resolved 20 out of 32 bug story points (62.5%), showing effective debugging and issue resolution capabilities.
+                </div>
+                <div class="retro-item">
+                    <strong>High Task Completion:</strong> Completed 8/10 task story points (80%), indicating good execution on operational and maintenance activities.
+                </div>
+                <div class="retro-item">
+                    <strong>Excellent Feedback Implementation:</strong> Achieved 88.9% completion (8/9 story points) on feedback items, showing responsiveness to stakeholder input.
+                </div>
+                <div class="retro-item">
+                    <strong>Team Collaboration:</strong> Strong collaboration evidenced by GitLab merge requests and consistent standup participation across 7 active team members.
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>⚠️ What Didn't Go Well</h2>
+                <div class="retro-item issue-item">
+                    <strong>Zero Story Completion:</strong> Critical failure with 0/9 story points completed, indicating major blockers in feature development and delivery.
+                </div>
+                <div class="retro-item issue-item">
+                    <strong>Sub-task Completion Gap:</strong> Only 69.6% completion rate (16/23 story points) suggests breakdown in task planning or execution.
+                </div>
+                <div class="retro-item issue-item">
+                    <strong>Sprint Velocity Miss:</strong> Achieved only 71.6% of planned velocity (78/109 story points), indicating scope or estimation issues.
+                </div>
+                <div class="retro-item issue-item">
+                    <strong>Incomplete Issue Resolution:</strong> 18 issues remain unresolved, representing 22% of sprint commitment not delivered.
+                </div>
+                <div class="retro-item issue-item">
+                    <strong>Bug Backlog:</strong> 12 story points worth of bugs remain unresolved, potentially impacting user experience and system stability.
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🔧 What Can Be Improved</h2>
+                <div class="retro-item improvement-item">
+                    <strong>Story Development Process:</strong> Implement story breakdown sessions and identify blockers early to prevent zero completion scenarios in future sprints.
+                </div>
+                <div class="retro-item improvement-item">
+                    <strong>Sprint Planning Accuracy:</strong> Improve estimation techniques and capacity planning to achieve more realistic sprint commitments and higher velocity achievement.
+                </div>
+                <div class="retro-item improvement-item">
+                    <strong>Sub-task Management:</strong> Enhance sub-task tracking and dependencies management to improve completion rates from 69.6% to target 85%+.
+                </div>
+                <div class="retro-item improvement-item">
+                    <strong>Bug Triage Process:</strong> Implement daily bug triage and prioritization to improve bug resolution rate from 62.5% to target 80%+.
+                </div>
+                <div class="retro-item improvement-item">
+                    <strong>Cross-functional Collaboration:</strong> Strengthen coordination between development, QA, and product teams to prevent feature development bottlenecks.
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>📌 Action Items</h2>
+                <div class="retro-item action-item">
+                    <strong>Story Blocker Analysis:</strong> Conduct immediate root cause analysis on why 0/9 stories were completed and create mitigation plan for Sprint 7.
+                </div>
+                <div class="retro-item action-item">
+                    <strong>Capacity Planning Workshop:</strong> Schedule team capacity planning session to right-size Sprint 7 commitments based on actual velocity of 78 story points.
+                </div>
+                <div class="retro-item action-item">
+                    <strong>Daily Story Standup:</strong> Implement daily story-focused standups to track progress and identify blockers early in Sprint 7.
+                </div>
+                <div class="retro-item action-item">
+                    <strong>Bug Resolution SLA:</strong> Establish bug resolution SLA and daily bug review process to improve resolution rate to 80%+ target.
+                </div>
+                <div class="retro-item action-item">
+                    <strong>Sub-task Dependency Mapping:</strong> Create dependency mapping for all sub-tasks in Sprint 7 planning to prevent completion bottlenecks.
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🙏 Team Appreciation</h2>
+                <div class="team-grid">
+                    <div class="team-member appreciation-item">
+                        <strong>Sathiya Rengarajan</strong><br>
+                        Outstanding test case execution with perfect completion rate, ensuring quality delivery and comprehensive coverage.
+                    </div>
+                    <div class="team-member appreciation-item">
+                        <strong>Sumithra S</strong><br>
+                        Exceptional bug resolution leadership and QA coordination, driving quality improvements across multiple components.
+                    </div>
+                    <div class="team-member appreciation-item">
+                        <strong>Mohamed Jalaludeen S</strong><br>
+                        Strong technical contributions with consistent GitLab merge requests and UI scope completion.
+                    </div>
+                    <div class="team-member appreciation-item">
+                        <strong>Elavarasi Venugopal</strong><br>
+                        Reliable UI development and consistent delivery across multiple sprint components and bug fixes.
+                    </div>
+                    <div class="team-member appreciation-item">
+                        <strong>Mohan Kumar S</strong><br>
+                        Dedicated backend development work on profile and ID update endpoints, maintaining system integrity.
+                    </div>
+                    <div class="team-member appreciation-item">
+                        <strong>Shiyam Sundar Loganathan</strong><br>
+                        Consistent backend contributions and service incident management, ensuring system stability.
+                    </div>
+                    <div class="team-member appreciation-item">
+                        <strong>Kailash Jai</strong><br>
+                        Product management excellence and cross-functional coordination, driving sprint objectives forward.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Burndown Analysis Tab -->
+        <div id="burndown" class="tab-content">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <h3>82</h3>
+                    <p>Total Items</p>
+                </div>
+                <div class="metric-card">
+                    <h3>64</h3>
+                    <p>Completed Items</p>
+                </div>
+                <div class="metric-card">
+                    <h3>18</h3>
+                    <p>Remaining Items</p>
+                </div>
+                <div class="metric-card">
+                    <h3>0</h3>
+                    <p>Scope Creep Items</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>📊 Agile Coach Burndown Analysis</h2>
+                <div class="burndown-analysis">
+                    <h3>Sprint 6 Performance Overview</h3>
+                    <p><strong>Sprint Duration:</strong> Extended 10 days beyond planned end date</p>
+                    <p><strong>Story Point Completion:</strong> 71.6% (78/109 story points)</p>
+                    <p><strong>Issue Completion:</strong> 78% (64/82 issues)</p>
+                    <p><strong>Scope Creep:</strong> No new stories added mid-sprint</p>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="burndownChart"></canvas>
+                </div>
+
+                <div class="coach-insight">
+                    <h3>🎯 Burndown Assessment: POOR Performance</h3>
+                    <p><strong>Burndown Status:</strong> Poor - 28% velocity shortfall with 10-day extension indicates significant planning and execution issues.</p>
+                </div>
+
+                <div class="coach-insight">
+                    <h3>📈 Root Cause Analysis</h3>
+                    <p><strong>Primary Issue:</strong> Zero story completion (0/9 stories) - This is the critical failure point causing poor burndown performance.</p>
+                    <p><strong>What Zero Story Completion Means:</strong></p>
+                    <ul>
+                        <li><strong>3 Story items planned:</strong> LTT-1647, LTT-1621, LTT-1754 (9 story points total)</li>
+                        <li><strong>0 Stories completed:</strong> All 3 stories remain unfinished</li>
+                        <li><strong>Current Status:</strong> LTT-1647 (QA Review), LTT-1621 (PO/EM Review), LTT-1754 (Dev In Progress)</li>
+                        <li><strong>Impact:</strong> No new features delivered - only bugs, tasks, and tests completed</li>
+                        <li><strong>Sprint Goal:</strong> Likely not achieved due to zero feature delivery</li>
+                    </ul>
+                    <p><strong>Secondary Issue:</strong> 28% overcommitment (109 vs 78 story points delivered) indicates estimation accuracy problems.</p>
+                </div>
+
+                <div class="coach-insight">
+                    <h3>🔍 Burndown Pattern Analysis</h3>
+                    <p><strong>Story Development Bottleneck:</strong> Complete failure in story delivery suggests technical blockers, unclear requirements, or resource allocation issues.</p>
+                    <p><strong>Testing Excellence:</strong> 100% test completion shows the team can deliver when scope is clear and manageable.</p>
+                </div>
+
+                <div class="coach-insight">
+                    <h3>⚡ Why Burndown Failed</h3>
+                    <ul>
+                        <li><strong>Story Complexity:</strong> Stories may have been too large or complex</li>
+                        <li><strong>Technical Blockers:</strong> Unresolved dependencies or technical challenges</li>
+                        <li><strong>Resource Allocation:</strong> Team focus diverted to bugs and operational tasks</li>
+                        <li><strong>Estimation Issues:</strong> Significant underestimation of story effort</li>
+                        <li><strong>Sprint Planning:</strong> Overcommitment without considering team capacity</li>
+                    </ul>
+                </div>
+
+                <div class="coach-insight">
+                    <h3>🎯 Immediate Actions for Sprint 7</h3>
+                    <ul>
+                        <li><strong>Story Breakdown:</strong> Break stories into smaller, manageable pieces</li>
+                        <li><strong>Capacity Planning:</strong> Commit to maximum 78 story points</li>
+                        <li><strong>Story Focus:</strong> Dedicate specific team members to story development</li>
+                        <li><strong>Daily Story Review:</strong> Track story progress daily, not just overall burndown</li>
+                        <li><strong>Blocker Resolution:</strong> Identify and resolve story blockers immediately</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>✅ Scope Management Analysis</h2>
+                <div class="burndown-analysis">
+                    <h3>Scope Creep Assessment</h3>
+                    <p><strong>Industry Standard:</strong> Scope creep refers to new features/stories added mid-sprint, not bugs or test cases</p>
+                    <p><strong>Sprint 6 Result:</strong> No scope creep detected - all stories were planned from sprint start</p>
+                    <p><strong>Bug Management:</strong> 3 production bugs added (normal operational activity, not scope creep)</p>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+                    <div class="section">
+                        <h3>📊 Scope Analysis</h3>
+                        <ul>
+                            <li><strong>Planned Stories:</strong> 3 stories (9 SP)</li>
+                            <li><strong>Added Stories:</strong> 0 (No scope creep)</li>
+                            <li><strong>Production Bugs:</strong> 3 (Normal operations)</li>
+                            <li><strong>Test Cases:</strong> 26 (Planned QA activity)</li>
+                            <li><strong>Scope Discipline:</strong> Excellent</li>
+                        </ul>
+                    </div>
+                    <div class="section">
+                        <h3>🎯 Key Insights</h3>
+                        <ul>
+                            <li><strong>No Scope Creep:</strong> Team maintained sprint commitment</li>
+                            <li><strong>Burndown Issue:</strong> Execution, not scope management</li>
+                            <li><strong>Story Failure:</strong> 0% completion is the real problem</li>
+                            <li><strong>Bug Response:</strong> Good reactive support</li>
+                            <li><strong>Testing Strength:</strong> Excellent delivery capability</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px;">
+                <div class="section">
+                    <h3>📊 Sprint Metrics Summary</h3>
+                    <ul>
+                        <li><strong>Planned Velocity:</strong> 109 story points</li>
+                        <li><strong>Actual Velocity:</strong> 78 story points</li>
+                        <li><strong>Velocity Achievement:</strong> 71.6%</li>
+                        <li><strong>Burndown Status:</strong> Poor</li>
+                        <li><strong>Scope Creep:</strong> None (0 stories added)</li>
+                        <li><strong>Team Size:</strong> 7 active members</li>
+                    </ul>
+                </div>
+                <div class="section">
+                    <h3>🎯 Critical Focus Areas</h3>
+                    <ul>
+                        <li><strong>Story Development:</strong> Critical - 0% completion</li>
+                        <li><strong>Estimation Accuracy:</strong> Improve by 28%</li>
+                        <li><strong>Sprint Planning:</strong> Right-size commitments</li>
+                        <li><strong>Story Breakdown:</strong> Smaller, deliverable pieces</li>
+                        <li><strong>Blocker Management:</strong> Proactive resolution</li>
+                        <li><strong>Maintain Testing:</strong> Continue 100% excellence</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        // Velocity Chart
+        const velocityCtx = document.getElementById('velocityChart').getContext('2d');
+        new Chart(velocityCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Sub-task', 'Bug', 'Task', 'Story', 'Feedbacks', 'Test'],
+                datasets: [{
+                    label: 'Completed',
+                    data: [16, 20, 8, 0, 8, 26],
+                    backgroundColor: '#4CAF50'
+                }, {
+                    label: 'Remaining',
+                    data: [7, 12, 2, 9, 1, 0],
+                    backgroundColor: '#FF6B6B'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { stacked: true },
+                    y: { stacked: true }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Story Points by Issue Type (Completed vs Remaining)'
+                    }
+                }
+            }
+        });
+
+        // Burndown Chart
+        const burndownCtx = document.getElementById('burndownChart').getContext('2d');
+        new Chart(burndownCtx, {
+            type: 'line',
+            data: {
+                labels: ['Day 1', 'Day 5', 'Day 10', 'Day 15', 'Day 20', 'Day 25', 'Day 30'],
+                datasets: [{
+                    label: 'Ideal Burndown',
+                    data: [109, 93, 78, 62, 47, 31, 0],
+                    borderColor: '#2196F3',
+                    backgroundColor: 'transparent',
+                    borderDash: [5, 5]
+                }, {
+                    label: 'Actual Burndown',
+                    data: [109, 105, 98, 89, 85, 82, 78],
+                    borderColor: '#FF6B6B',
+                    backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Sprint 6 Burndown Chart (Story Points)'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 120
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
